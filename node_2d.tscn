@@ -1,0 +1,234 @@
+[gd_scene format=3 uid="uid://cfar6do60ed7o"]
+
+[ext_resource type="Script" path="res://scripts/day_night_cycle.gd" id="1_cycle"]
+[ext_resource type="Script" path="res://scripts/day_night_lighting.gd" id="2_light"]
+[ext_resource type="Script" path="res://scripts/monastery_phase_manager.gd" id="3_mgr"]
+[ext_resource type="Script" uid="uid://djetkli1eky27" path="res://node_2d.gd" id="4_player"]
+[ext_resource type="Texture2D" uid="uid://cf60pjn8n3s0l" path="res://icon.svg" id="5_icon"]
+[ext_resource type="Script" path="res://scripts/hud.gd" id="6_hud"]
+[ext_resource type="Script" path="res://scripts/purification_aura.gd" id="7_aura"]
+[ext_resource type="Script" path="res://scripts/corrupted_spirit.gd" id="8_spirit"]
+[ext_resource type="Script" path="res://scripts/corruption_component.gd" id="9_corp"]
+[ext_resource type="Script" path="res://scripts/building_plot.gd" id="10_plot"]
+[ext_resource type="Script" path="res://scripts/resource_node.gd" id="11_res"]
+[ext_resource type="Script" path="res://scripts/worker.gd" id="12_worker"]
+[ext_resource type="Script" path="res://scripts/night_wave_spawner.gd" id="13_spawner"]
+[ext_resource type="Script" path="res://scripts/stupa.gd" id="14_stupa"]
+[ext_resource type="Script" path="res://scripts/audio_manager.gd" id="15_audio"]
+[ext_resource type="Script" path="res://scripts/ending_celebration.gd" id="16_ending"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hw2ex"]
+size = Vector2(95, 94)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_aura"]
+radius = 140.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_spirit"]
+radius = 28.0
+
+[node name="SamyeMonastery" type="Node2D"]
+y_sort_enabled = true
+
+[node name="MonasteryAudio" type="Node" parent="."]
+script = ExtResource("15_audio")
+
+[node name="DayNightCycle" type="Node" parent="."]
+script = ExtResource("1_cycle")
+day_duration = 45.0
+night_duration = 30.0
+
+[node name="DayNightLighting" type="CanvasModulate" parent="."]
+script = ExtResource("2_light")
+
+[node name="MonasteryPhaseManager" type="Node" parent="."]
+script = ExtResource("3_mgr")
+
+[node name="NightWaveSpawner" type="Node" parent="."]
+script = ExtResource("13_spawner")
+
+[node name="Ground" type="ColorRect" parent="."]
+z_index = -1
+offset_left = -3000.0
+offset_top = -3000.0
+offset_right = 3000.0
+offset_bottom = 3000.0
+color = Color(0.24, 0.42, 0.32, 1)
+
+[node name="GreatStupa" type="Area2D" parent="."]
+position = Vector2(576, 110)
+script = ExtResource("14_stupa")
+
+[node name="ForestTree1" type="Area2D" parent="."]
+position = Vector2(-220, 200)
+script = ExtResource("11_res")
+
+[node name="ForestTree2" type="Area2D" parent="."]
+position = Vector2(-280, 360)
+script = ExtResource("11_res")
+
+[node name="ForestTree3" type="Area2D" parent="."]
+position = Vector2(-200, 480)
+script = ExtResource("11_res")
+
+[node name="StoneQuarry1" type="Area2D" parent="."]
+position = Vector2(1300, 180)
+script = ExtResource("11_res")
+resource_type = 1
+
+[node name="StoneQuarry2" type="Area2D" parent="."]
+position = Vector2(1380, 340)
+script = ExtResource("11_res")
+resource_type = 1
+
+[node name="StoneQuarry3" type="Area2D" parent="."]
+position = Vector2(1280, 480)
+script = ExtResource("11_res")
+resource_type = 1
+
+[node name="CentralUtseTemple" type="Area2D" parent="."]
+position = Vector2(576, 330)
+script = ExtResource("10_plot")
+building_name = "Central Utse Temple (Mount Meru)"
+wood_required = 30.0
+stone_required = 40.0
+plot_size = Vector2(180, 180)
+is_central_temple = true
+architecture_style = 1
+
+[node name="WestTemple" type="Area2D" parent="."]
+position = Vector2(300, 330)
+script = ExtResource("10_plot")
+building_name = "Aryapalo Pavilion (West)"
+wood_required = 20.0
+stone_required = 20.0
+plot_size = Vector2(120, 120)
+architecture_style = 2
+
+[node name="EastTemple" type="Area2D" parent="."]
+position = Vector2(852, 330)
+script = ExtResource("10_plot")
+building_name = "Jampa Pavilion (East)"
+wood_required = 20.0
+stone_required = 20.0
+plot_size = Vector2(120, 120)
+architecture_style = 3
+
+[node name="Worker1" type="CharacterBody2D" parent="."]
+position = Vector2(500, 340)
+motion_mode = 1
+script = ExtResource("12_worker")
+
+[node name="Worker2" type="CharacterBody2D" parent="."]
+position = Vector2(650, 340)
+motion_mode = 1
+script = ExtResource("12_worker")
+
+[node name="Worker3" type="CharacterBody2D" parent="."]
+position = Vector2(576, 230)
+motion_mode = 1
+script = ExtResource("12_worker")
+
+[node name="Worker4" type="CharacterBody2D" parent="."]
+position = Vector2(576, 430)
+motion_mode = 1
+script = ExtResource("12_worker")
+
+[node name="Player" type="CharacterBody2D" parent="."]
+position = Vector2(576, 500)
+motion_mode = 1
+script = ExtResource("4_player")
+
+[node name="Sprite2D" type="Sprite2D" parent="Player"]
+texture = ExtResource("5_icon")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
+position = Vector2(2.5, 1)
+shape = SubResource("RectangleShape2D_hw2ex")
+
+[node name="Camera2D" type="Camera2D" parent="Player"]
+position_smoothing_enabled = true
+
+[node name="PurificationAura" type="Area2D" parent="Player"]
+script = ExtResource("7_aura")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player/PurificationAura"]
+shape = SubResource("CircleShape2D_aura")
+
+[node name="WildernessSpirit1" type="CharacterBody2D" parent="."]
+position = Vector2(60, 80)
+motion_mode = 1
+script = ExtResource("8_spirit")
+
+[node name="Sprite2D" type="Sprite2D" parent="WildernessSpirit1"]
+scale = Vector2(0.55, 0.55)
+texture = ExtResource("5_icon")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WildernessSpirit1"]
+shape = SubResource("CircleShape2D_spirit")
+
+[node name="CorruptionComponent" type="Node" parent="WildernessSpirit1"]
+script = ExtResource("9_corp")
+max_corruption = 80.0
+
+[node name="WildernessSpirit2" type="CharacterBody2D" parent="."]
+position = Vector2(1100, 600)
+motion_mode = 1
+script = ExtResource("8_spirit")
+
+[node name="Sprite2D" type="Sprite2D" parent="WildernessSpirit2"]
+scale = Vector2(0.55, 0.55)
+texture = ExtResource("5_icon")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WildernessSpirit2"]
+shape = SubResource("CircleShape2D_spirit")
+
+[node name="CorruptionComponent" type="Node" parent="WildernessSpirit2"]
+script = ExtResource("9_corp")
+max_corruption = 90.0
+
+[node name="HUD" type="CanvasLayer" parent="."]
+script = ExtResource("6_hud")
+
+[node name="MarginContainer" type="MarginContainer" parent="HUD"]
+offset_right = 440.0
+offset_bottom = 160.0
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="PhaseLabel" type="Label" parent="HUD/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Day 1 — Day (Workers Building)"
+
+[node name="TimeLabel" type="Label" parent="HUD/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Time Left: 00:45"
+
+[node name="FoundationLabel" type="Label" parent="HUD/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Samye Temples: 0 / 3 Completed"
+
+[node name="SanctityLabel" type="Label" parent="HUD/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Sanctity: 100 / 100 | 🛕 Stupa Protectors: 0"
+
+[node name="ControlsLabel" type="Label" parent="HUD/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.45, 0.95)
+text = "[WASD]: Move | [SPACE]: Chant Mantra (Doubles Workers for 3s!)"
+
+[node name="EndingCelebrationLayer" type="CanvasLayer" parent="."]
+layer = 100
+
+[node name="EndingCelebration" type="Control" parent="EndingCelebrationLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("16_ending")
