@@ -1,0 +1,22 @@
+# Guru Rinpoche Game - Design & Development Rules
+
+## Technical Stack
+* **Engine**: Godot 4.x[cite: 1].
+* **Language**: GDScript only[cite: 1].
+* **Renderer**: Compatibility (optimized for web/mobile)[cite: 1].
+* **Perspective**: 2D Top-Down using Y-Sort for depth[cite: 1].
+* **Nodes**: Use `CharacterBody2D` for player characters and enemies to handle physics and collisions[cite: 1]. 
+
+## Art Direction & Consistency
+* **Aesthetic**: Studio Ghibli-inspired, hand-drawn art style[cite: 1].
+* **Color Palette**: Earthy, dark tones for "corrupted" areas; bright golds, vibrant greens, and soft blues for "cleansed" areas[cite: 1].
+* **Animations**: Use `AnimatedSprite2D` with `SpriteFrames`[cite: 1]. Use the "Paper Doll" technique (child Sprite2D nodes) for gear and stance upgrades to keep the base character appearance consistent[cite: 1].
+
+## Core Gameplay Mechanics
+* **Non-Violent Combat Loop**: There are no HP bars. Enemies have a "Karmic Debt" or "Corruption" gauge[cite: 1]. Player actions (using auras and mantras) cleanse this gauge[cite: 1].
+* **Subjugation**: When an enemy's corruption hits zero, they do not die. They transform visually and mechanically into a "Dharmapala" (an ally/protector)[cite: 1].
+* **Eight Manifestations**: The player uses Guru Rinpoche's Eight Manifestations as interchangeable "stances" to solve environmental puzzles and pacify different types of spirits[cite: 1].
+
+## Level Progression & Phases
+* **Phase 1 (Action-Adventure)**: The player explores the map and uses 2D collision spheres (auras) to cleanse corrupted environments and subjugate mountain deities[cite: 1].
+* **Phase 2 (Tower Defense)**: Set at Samye Monastery[cite: 1]. During the Day phase, the player builds the monastery foundation[cite: 1]. During the Night phase, the player places tamed Dharmapalas on a grid to project purification fields against incoming shadow spirits[cite: 1].
