@@ -1,4 +1,4 @@
-﻿# Guru Rinpoche Game — Automated Test Execution Report
+# Guru Rinpoche Game — Automated Test Execution Report
 
 - **Execution Timestamp**: 2026-11-12 09:53:33 +08:00
 - **Models Verified**: Padmasambhava, Monastery Builder Monk, 4 Dual-Appearance Spirits (Mountain Mist, Fire Imp, Shadow Cave, Stone Giant), Great Stupa, Samye Monastery
