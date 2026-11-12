@@ -6,13 +6,6 @@ extends CharacterBody2D
 ##   1. FIRE_IMP    : Wrathful Fire Imp (Wrathful)   -> Courage Flame Guardian (Cleansed)
 ##   2. SHADOW_CAVE : Shadow Cave Demon (Wrathful)   -> Cave Light Guardian (Cleansed)
 ##   3. STONE_GIANT : Stone Giant Demon (Wrathful)   -> Temple Guardian Giant (Cleansed)
-##
-## Gameplay Rule:
-## - Randomly selects any 2 of the 4 Spirit Archetypes at a time (`active_archetype_pair`)
-##   so each wave/encounter features a 2-model combination.
-## - Spawns in the Wrathful (Before Cleansing) appearance at Night and transforms into the
-##   Cleansed Dharmapala appearance once purified by Guru Rinpoche.
-## - Collision Fix: Subjugated Dharmapalas have collision disabled so they NEVER block Guru Rinpoche.
 
 enum FacingDirection { DOWN, UP, LEFT, RIGHT }
 
@@ -23,7 +16,6 @@ enum SpiritArchetype {
 	STONE_GIANT = 3
 }
 
-## Holds the 2 randomly selected Spirit Archetypes active at a time
 static var active_archetype_pair: Array[SpiritArchetype] = []
 static var _pair_spawn_counter: int = 0
 
@@ -55,15 +47,15 @@ var cycle_timer: DayNightCycle = null
 var target_building: BuildingPlot = null
 var wander_direction: Vector2 = Vector2.ZERO
 var wander_timer: float = 0.0
+var is_attacking_building: bool = false
+var attack_target_offset: Vector2 = Vector2.ZERO
 
-# 4-directional turnaround textures (Before Cleansing vs. After Cleansing)
 var corrupted_dir_textures: Dictionary = {}
 var cleansed_dir_textures: Dictionary = {}
 var current_facing: FacingDirection = FacingDirection.DOWN
 var hover_phase: float = 0.0
 
 
-## Randomly selects 2 distinct SpiritArchetypes out of the 4 available models
 static func roll_random_archetype_pair() -> Array[SpiritArchetype]:
 	var pool: Array[SpiritArchetype] = [
 		SpiritArchetype.MIST_DEMON,
@@ -77,7 +69,6 @@ static func roll_random_archetype_pair() -> Array[SpiritArchetype]:
 	return active_archetype_pair
 
 
-## Returns one of the 2 currently active SpiritArchetypes (alternating with slight randomness so both models appear)
 static func pick_from_active_pair() -> SpiritArchetype:
 	if active_archetype_pair.size() < 2:
 		roll_random_archetype_pair()
@@ -184,12 +175,10 @@ func set_archetype(arch: SpiritArchetype) -> void:
 func _on_phase_changed(phase: DayNightCycle.Phase) -> void:
 	_update_phase_visibility(phase)
 	if phase == DayNightCycle.Phase.DAY and not is_subjugated:
-		# Unpacified spirits retreat back into the wilderness at dawn
 		queue_free()
 
 
 func _update_phase_visibility(phase: DayNightCycle.Phase) -> void:
-	# Day time: spirits and Dharmapalas remain unseen
 	visible = (phase == DayNightCycle.Phase.NIGHT) and not is_ascended
 
 
@@ -197,7 +186,6 @@ func _physics_process(delta: float) -> void:
 	if is_ascended:
 		return
 
-	# If day time, spirits are hidden and dormant
 	if cycle_timer and cycle_timer.is_day():
 		velocity = Vector2.ZERO
 		return
@@ -245,6 +233,8 @@ func _face_towards(target_pos: Vector2) -> void:
 
 
 func _process_corrupted_behavior(delta: float) -> void:
+	is_attacking_building = false
+
 	if player_target == null:
 		player_target = get_tree().get_first_node_in_group("player")
 
@@ -257,18 +247,19 @@ func _process_corrupted_behavior(delta: float) -> void:
 		velocity = dir * move_speed
 		return
 
-	# Target and dismantle monastery buildings
 	if target_building == null or not is_instance_valid(target_building):
 		target_building = _find_nearest_building()
 
 	if target_building:
 		var dist := global_position.distance_to(target_building.global_position)
-		if dist > 35.0:
+		if dist > 48.0:
 			var dir := (target_building.global_position - global_position).normalized()
 			velocity = dir * move_speed
 		else:
 			velocity = Vector2.ZERO
-			target_building.dismantle(dismantle_power_per_sec * delta)
+			is_attacking_building = true
+			attack_target_offset = (target_building.global_position - global_position).limit_length(46.0)
+			target_building.dismantle(dismantle_power_per_sec * delta, int(spirit_archetype))
 	else:
 		wander_timer -= delta
 		if wander_timer <= 0.0:
@@ -280,7 +271,6 @@ func _process_follow_guru_rinpoche(delta: float) -> void:
 	if is_ascended:
 		return
 
-	# Check proximity to the Stupa: automatically ascend into the sanctuary!
 	var stupa := get_tree().get_first_node_in_group("stupa") as Stupa
 	if stupa and is_instance_valid(stupa):
 		var stupa_dist := global_position.distance_to(stupa.global_position)
@@ -302,7 +292,6 @@ func _process_follow_guru_rinpoche(delta: float) -> void:
 		velocity = Vector2.ZERO
 
 
-## Ascends into the Stupa: plays dissolution animation and frees node so screen stays clean
 func ascend_into_stupa(stupa: Stupa) -> void:
 	if is_ascended:
 		return
@@ -350,7 +339,6 @@ func _on_cleansed() -> void:
 	is_subjugated = true
 	add_to_group("dharmapalas")
 
-	# Disable collision entirely so it never blocks or pushes Guru Rinpoche!
 	collision_layer = 0
 	collision_mask = 0
 	var col := get_node_or_null("CollisionShape2D") as CollisionShape2D
@@ -375,7 +363,6 @@ func _apply_visual_state() -> void:
 
 		var target_color := subjugated_color if is_subjugated else corrupted_color
 		if is_subjugated:
-			# Luminous wisdom flash as Wrathful Spirit transforms into Cleansed Guardian
 			sprite.modulate = Color(1.6, 1.7, 2.0, 1.0)
 			var tween := create_tween()
 			tween.tween_property(sprite, "modulate", target_color, 0.45)
@@ -390,7 +377,9 @@ func _draw() -> void:
 	if not is_subjugated:
 		draw_circle(Vector2(0, 18), 20.0, Color(0.18, 0.16, 0.24, 0.38))
 
-		# Karmic Confusion / Anger Gauge above the Wrathful Spirit
+		if is_attacking_building:
+			_draw_archetype_attack_effect()
+
 		var bar_width := 46.0
 		var bar_height := 6.0
 		var bar_pos := Vector2(-bar_width / 2.0, -64.0)
@@ -400,8 +389,47 @@ func _draw() -> void:
 		draw_rect(Rect2(bar_pos, Vector2(fill_width, bar_height)), Color(0.85, 0.32, 0.45, 0.95))
 		draw_rect(Rect2(bar_pos, Vector2(bar_width, bar_height)), Color(0.82, 0.84, 0.94, 0.55), false, 1.0)
 	else:
-		# Cleansed Dharmapala Guardian aura
 		var halo_y := -14.0 + sin(hover_phase) * 3.5
 		draw_circle(Vector2(0, halo_y), 32.0, Color(guardian_halo_color.r, guardian_halo_color.g, guardian_halo_color.b, 0.16))
 		draw_arc(Vector2(0, halo_y), 30.0, 0.0, TAU, 32, guardian_halo_color, 2.0)
 		draw_circle(Vector2(0, halo_y - 34.0), 3.5, Color(1.0, 0.92, 0.45, 0.95))
+
+
+func _draw_archetype_attack_effect() -> void:
+	var t := hover_phase * 1.6
+	match spirit_archetype:
+		SpiritArchetype.MIST_DEMON:
+			for i in range(4):
+				var frac := float(i + 1) / 4.0
+				var puff_pos := attack_target_offset * frac + Vector2(cos(t + i * 1.5) * 10.0, sin(t * 1.3 + i) * 7.0)
+				draw_circle(puff_pos, 10.0 + frac * 8.0, Color(0.55, 0.62, 0.82, 0.38))
+				draw_arc(puff_pos, 12.0 + frac * 6.0, t + i, t + i + PI * 1.2, 16, Color(0.82, 0.84, 0.96, 0.55), 2.0)
+
+		SpiritArchetype.FIRE_IMP:
+			draw_circle(Vector2(0, -10), 26.0 + sin(t * 3.0) * 4.0, Color(0.95, 0.32, 0.12, 0.28))
+			for i in range(6):
+				var spark_phase := fmod(t * 2.2 + float(i) * 0.6, 1.0)
+				var side := sin(t * 4.0 + i * 2.1) * 14.0
+				var normal := Vector2(-attack_target_offset.y, attack_target_offset.x).normalized()
+				var sp_pos := attack_target_offset * spark_phase + normal * side
+				draw_circle(sp_pos, 4.5 * (1.0 - spark_phase * 0.4), Color(1.0, 0.48, 0.14, 0.85))
+				draw_circle(sp_pos, 2.2, Color(1.0, 0.92, 0.35, 0.95))
+
+		SpiritArchetype.SHADOW_CAVE:
+			draw_circle(Vector2(0, -8), 28.0, Color(0.14, 0.08, 0.24, 0.42))
+			var prev := Vector2(0, -8)
+			for seg in range(1, 5):
+				var frac := float(seg) / 4.0
+				var jitter := Vector2(sin(t * 5.0 + seg * 2.3) * 9.0, cos(t * 4.5 + seg * 1.9) * 9.0)
+				var next_pt := attack_target_offset * frac + (jitter if seg < 4 else Vector2.ZERO)
+				draw_line(prev, next_pt, Color(0.72, 0.38, 0.98, 0.88), 2.4)
+				prev = next_pt
+
+		SpiritArchetype.STONE_GIANT:
+			var slam := absf(sin(t * 1.8))
+			var ring_r := 16.0 + slam * 28.0
+			draw_arc(attack_target_offset * 0.6, ring_r, 0.0, TAU, 24, Color(0.62, 0.56, 0.46, (1.0 - slam) * 0.85), 3.0)
+			for i in range(4):
+				var ang := t * 1.2 + float(i) * (TAU / 4.0)
+				var rock_pos := attack_target_offset * 0.5 + Vector2(cos(ang), sin(ang)) * (12.0 + slam * 14.0)
+				draw_rect(Rect2(rock_pos - Vector2(4, 4), Vector2(8, 7)), Color(0.46, 0.44, 0.40, 0.90))

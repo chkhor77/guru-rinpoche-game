@@ -1,22 +1,6 @@
 class_name SacredLoreModal
 extends Control
 
-## Interactive Sacred Lore & Model Reference Modal powered by the `samye-visual-models` skill.
-## Lets players inspect all 12 full concept & turnaround sheets:
-##   1. Padmasambhava (Guru Rinpoche)
-##   2. Great Enlightenment Stupa
-##   3. Samye Monastery
-##   4. Monastery Builder Monk
-##   5. Mountain Mist Demon (Before Cleansing)
-##   6. Clear Sky Guardian (After Cleansing)
-##   7. Wrathful Fire Imp (Before Cleansing)
-##   8. Fire Imp / Courage Flame Guardian (After Cleansing)
-##   9. Shadow Cave Demon — Wrathful (Before Cleansing)
-##  10. Shadow Cave / Cave Light Guardian (After Cleansing)
-##  11. Stone Giant Demon — Wrathful (Before Cleansing)
-##  12. Stone Giant / Temple Guardian (After Cleansing)
-## Toggle with [L] or [TAB], switch tabs with [1]-[9], [0], [-], [=], [Left/Right], or click tabs.
-
 var is_open: bool = false
 var current_tab: int = 0
 
@@ -92,6 +76,18 @@ var sheets: Array[Dictionary] = [
 		"subtitle": "After Cleansing: Temple Guardian Giant — \"Learning Flexibility and Patience.\"",
 		"path": ModelTextures.SHEET_STONE_GIANT_CLEANSED,
 		"tex": null
+	},
+	{
+		"title": "13. Cedar Grove",
+		"subtitle": "Resource Modal: Sacred Himalayan Cedar Grove — \"Living Timber Harvested with Mindfulness.\"",
+		"path": ModelTextures.SHEET_CEDAR_FOREST,
+		"tex": null
+	},
+	{
+		"title": "14. Stone Quarry",
+		"subtitle": "Resource Modal: Sacred Himalayan Sandstone Quarry — \"Foundation Stones of Wisdom.\"",
+		"path": ModelTextures.SHEET_SANDSTONE_QUARRY,
+		"tex": null
 	}
 ]
 
@@ -161,6 +157,10 @@ func _unhandled_input(event: InputEvent) -> void:
 				current_tab = 10; queue_redraw(); get_viewport().set_input_as_handled()
 			elif k == KEY_EQUAL:
 				current_tab = 11; queue_redraw(); get_viewport().set_input_as_handled()
+			elif k == KEY_BRACKETLEFT:
+				current_tab = 12; queue_redraw(); get_viewport().set_input_as_handled()
+			elif k == KEY_BRACKETRIGHT:
+				current_tab = 13; queue_redraw(); get_viewport().set_input_as_handled()
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -190,10 +190,8 @@ func _draw() -> void:
 	var w := vp.x
 	var h := vp.y
 
-	# 1. Dimmed backdrop
 	draw_rect(Rect2(0, 0, w, h), Color(0.04, 0.04, 0.06, 0.84))
 
-	# 2. Modal Frame
 	var modal_w := minf(1040.0, w - 32.0)
 	var modal_h := minf(616.0, h - 24.0)
 	var modal_pos := Vector2((w - modal_w) * 0.5, (h - modal_h) * 0.5)
@@ -203,16 +201,15 @@ func _draw() -> void:
 	draw_rect(modal_rect, Color(0.95, 0.80, 0.32, 1.0), false, 2.5)
 	draw_rect(modal_rect.grow(-5.0), Color(0.75, 0.58, 0.22, 0.6), false, 1.0)
 
-	# 3. Top Header & 2-Row Tabs (6 tabs per row for all 12 sheets)
 	tab_rects.clear()
-	var cols := 6
-	var tab_w := (modal_w - 136.0 - float(cols - 1) * 6.0) / float(cols)
+	var cols := 7
+	var tab_w := (modal_w - 136.0 - float(cols - 1) * 5.0) / float(cols)
 	var tab_h := 24.0
 
 	for i in range(sheets.size()):
 		var col_idx := i % cols
 		var row_idx := int(i / cols)
-		var tx := modal_pos.x + 14.0 + col_idx * (tab_w + 6.0)
+		var tx := modal_pos.x + 14.0 + col_idx * (tab_w + 5.0)
 		var ty := modal_pos.y + 10.0 + row_idx * (tab_h + 4.0)
 		var tr := Rect2(tx, ty, tab_w, tab_h)
 		tab_rects.append(tr)
@@ -224,13 +221,11 @@ func _draw() -> void:
 		draw_rect(tr, border_col, false, 1.5 if is_active else 1.0)
 		draw_string(ThemeDB.fallback_font, Vector2(tx + 4, ty + 16), sheets[i]["title"] as String, HORIZONTAL_ALIGNMENT_CENTER, tab_w - 8, 11, Color(1.0, 0.95, 0.8))
 
-	# Close Button
 	close_rect = Rect2(modal_pos.x + modal_w - 94.0, modal_pos.y + 10.0, 80.0, 52.0)
 	draw_rect(close_rect, Color(0.35, 0.14, 0.14, 0.95))
 	draw_rect(close_rect, Color(0.95, 0.75, 0.35, 0.9), false, 1.2)
 	draw_string(ThemeDB.fallback_font, Vector2(close_rect.position.x, close_rect.position.y + 30), "Close [L]", HORIZONTAL_ALIGNMENT_CENTER, close_rect.size.x, 12, Color(1.0, 0.92, 0.75))
 
-	# 4. Active Reference Sheet Image
 	var active_item := sheets[current_tab]
 	var tex: Texture2D = active_item["tex"] as Texture2D
 	var img_area := Rect2(modal_pos.x + 18.0, modal_pos.y + 68.0, modal_w - 36.0, modal_h - 104.0)
@@ -251,6 +246,5 @@ func _draw() -> void:
 		draw_texture_rect(tex, dst, false)
 		draw_rect(dst, Color(0.95, 0.82, 0.38, 0.85), false, 1.5)
 
-	# 5. Footer Subtitle & Controls Hint
 	var footer_y := modal_pos.y + modal_h - 12.0
 	draw_string(ThemeDB.fallback_font, Vector2(modal_pos.x + 20, footer_y), (active_item["subtitle"] as String) + "   |   [Left/Right or Click Tabs]: Switch Sheet   |   [L / TAB / ESC]: Close", HORIZONTAL_ALIGNMENT_CENTER, modal_w - 40, 12, Color(1.0, 0.92, 0.65))
