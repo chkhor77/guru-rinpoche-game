@@ -91,6 +91,14 @@ const SAMYE_SIDE_RIGHT := "res://assets/sprites/samye_side_right.png"
 const SAMYE_TOP_LAYOUT := "res://assets/sprites/samye_top_layout.png"
 const SAMYE_HERO       := "res://assets/sprites/samye_hero.png"
 
+# --- Sacred Resource Nodes (Cedar Grove & Sandstone Quarry — 3 Harvest Stages Each) ---
+const CEDAR_FOREST_FULL     := "res://assets/sprites/cedar_forest_full.png"
+const CEDAR_FOREST_MID      := "res://assets/sprites/cedar_forest_mid.png"
+const CEDAR_FOREST_LOW      := "res://assets/sprites/cedar_forest_low.png"
+const SANDSTONE_QUARRY_FULL := "res://assets/sprites/sandstone_quarry_full.png"
+const SANDSTONE_QUARRY_MID  := "res://assets/sprites/sandstone_quarry_mid.png"
+const SANDSTONE_QUARRY_LOW  := "res://assets/sprites/sandstone_quarry_low.png"
+
 # --- Full Reference Model Sheets (for SacredLoreModal) ---
 const SHEET_PADMASAMBHAVA         := "res://assets/sheets/padmasambhava_sheet.jpg"
 const SHEET_STUPA                 := "res://assets/sheets/stupa_sheet.jpg"
@@ -104,6 +112,8 @@ const SHEET_SHADOW_CAVE_CORRUPTED := "res://assets/sheets/shadow_cave_corrupted_
 const SHEET_SHADOW_CAVE_CLEANSED  := "res://assets/sheets/shadow_cave_cleansed_sheet.jpg"
 const SHEET_STONE_GIANT_CORRUPTED := "res://assets/sheets/stone_giant_corrupted_sheet.jpg"
 const SHEET_STONE_GIANT_CLEANSED  := "res://assets/sheets/stone_giant_cleansed_sheet.jpg"
+const SHEET_CEDAR_FOREST          := "res://assets/sheets/cedar_forest_sheet.jpg"
+const SHEET_SANDSTONE_QUARRY      := "res://assets/sheets/sandstone_quarry_sheet.jpg"
 
 static var _cache: Dictionary = {}
 
@@ -118,11 +128,9 @@ static func get_tex(res_path: String) -> Texture2D:
 
 	var tex: Texture2D = null
 
-	# 1. Standard Godot ResourceLoader (works in Editor and Exported .pck / Web builds)
 	if ResourceLoader.exists(res_path):
 		tex = load(res_path) as Texture2D
 
-	# 2. Editor-only fallback if PNG/JPG was just generated on disk and not yet imported by Godot
 	if tex == null and OS.has_feature("editor"):
 		var global_path := ProjectSettings.globalize_path(res_path)
 		if FileAccess.file_exists(global_path):
@@ -138,6 +146,5 @@ static func get_tex(res_path: String) -> Texture2D:
 	return tex
 
 
-## Clears the static texture cache (useful for hot-reloading assets in development tools).
 static func clear_cache() -> void:
 	_cache.clear()

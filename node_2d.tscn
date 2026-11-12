@@ -16,6 +16,7 @@
 [ext_resource type="Script" path="res://scripts/stupa.gd" id="14_stupa"]
 [ext_resource type="Script" path="res://scripts/audio_manager.gd" id="15_audio"]
 [ext_resource type="Script" path="res://scripts/ending_celebration.gd" id="16_ending"]
+[ext_resource type="Script" path="res://scripts/ambient_ecosystem.gd" id="17_ambient"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_hw2ex"]
 size = Vector2(95, 94)
@@ -53,6 +54,9 @@ offset_top = -3000.0
 offset_right = 3000.0
 offset_bottom = 3000.0
 color = Color(0.24, 0.42, 0.32, 1)
+
+[node name="AmbientEcosystem" type="Node2D" parent="."]
+script = ExtResource("17_ambient")
 
 [node name="GreatStupa" type="Area2D" parent="."]
 position = Vector2(576, 110)
